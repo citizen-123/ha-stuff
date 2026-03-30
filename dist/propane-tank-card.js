@@ -308,7 +308,7 @@ class PropaneTankCard extends HTMLElement {
       ],
       ...config,
     };
-    this._config.thresholds.sort((a, b) => a.level - b.level);
+    this._config.thresholds = [...this._config.thresholds].sort((a, b) => a.level - b.level);
     this._expanded = false;
     this._selectedRange = this._config.history_hours;
 
