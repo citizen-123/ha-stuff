@@ -11,7 +11,12 @@ class PropaneTankCardEditor extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
-    if (!this._rendered) this._render();
+    if (!this._rendered) {
+      this._render();
+    } else {
+      const picker = this.querySelector("#editor-entity");
+      if (picker) picker.hass = hass;
+    }
   }
 
   _dispatch() {
@@ -168,9 +173,13 @@ class PropaneTankCardEditor extends HTMLElement {
       </style>
 
       <div class="editor">
-        <label for="editor-entity">Entity</label>
-        <input id="editor-entity" type="text" placeholder="sensor.propane_tank_level"
-               value="${this._config.entity || ""}"/>
+        <label>Entity</label>
+        <ha-entity-picker
+          id="editor-entity"
+          .hass=${null}
+          .value="${this._config.entity || ""}"
+          allow-custom-entity
+        ></ha-entity-picker>
         <div class="hint">Sensor reporting 0–100 (propane, water, battery, etc.)</div>
 
         <div class="toggle-row">
@@ -217,9 +226,16 @@ class PropaneTankCardEditor extends HTMLElement {
       </div>
     `;
 
+    // ── Set hass on entity picker ──
+    const picker = this.querySelector("#editor-entity");
+    if (picker && this._hass) {
+      picker.hass = this._hass;
+      picker.value = this._config.entity || "";
+    }
+
     // ── Listeners ──
-    this.querySelector("#editor-entity").addEventListener("change", (e) => {
-      this._config.entity = e.target.value.trim();
+    picker.addEventListener("value-changed", (e) => {
+      this._config.entity = e.detail.value;
       this._dispatch();
     });
     this.querySelector("#editor-title").addEventListener("input", (e) => {
@@ -308,7 +324,7 @@ class PropaneTankCard extends HTMLElement {
       ],
       ...config,
     };
-    this._config.thresholds.sort((a, b) => a.level - b.level);
+    this._config.thresholds = [...this._config.thresholds].sort((a, b) => a.level - b.level);
     this._expanded = false;
     this._selectedRange = this._config.history_hours;
 
