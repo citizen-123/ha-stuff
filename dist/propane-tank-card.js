@@ -38,6 +38,7 @@ class PropaneTankCardEditor extends HTMLElement {
     ];
     const historyHours = this._config.history_hours ?? 168;
     const showTitle = this._config.show_title !== false;
+    const tankStyle = this._config.tank_style || "vertical";
 
     this.innerHTML = `
       <style>
@@ -194,16 +195,13 @@ class PropaneTankCardEditor extends HTMLElement {
         <input id="editor-title" type="text" placeholder="Propane Tank"
                value="${this._config.title || ""}"/>
 
-        <div class="section-title">History Chart</div>
-        <label for="editor-history">Default Time Range</label>
-        <select id="editor-history">
-          <option value="24"  ${historyHours == 24 ? "selected" : ""}>24 Hours</option>
-          <option value="72"  ${historyHours == 72 ? "selected" : ""}>3 Days</option>
-          <option value="168" ${historyHours == 168 ? "selected" : ""}>7 Days</option>
-          <option value="336" ${historyHours == 336 ? "selected" : ""}>14 Days</option>
-          <option value="720" ${historyHours == 720 ? "selected" : ""}>30 Days</option>
+        <div class="section-title">Tank Style</div>
+        <label for="editor-tank-style">Orientation</label>
+        <select id="editor-tank-style">
+          <option value="vertical" ${tankStyle === "vertical" ? "selected" : ""}>Vertical (upright cylinder)</option>
+          <option value="horizontal" ${tankStyle === "horizontal" ? "selected" : ""}>Horizontal (side cylinder)</option>
         </select>
-        <div class="hint">Tap the card to expand the history chart. This sets the default range.</div>
+        <div class="hint">Choose the tank shape that matches your actual tank.</div>
 
         <div class="section-title">Color Thresholds</div>
         <div class="hint" style="margin-bottom:10px;">
@@ -246,8 +244,8 @@ class PropaneTankCardEditor extends HTMLElement {
       this._config.show_title = e.target.checked;
       this._dispatch();
     });
-    this.querySelector("#editor-history").addEventListener("change", (e) => {
-      this._config.history_hours = parseInt(e.target.value);
+    this.querySelector("#editor-tank-style").addEventListener("change", (e) => {
+      this._config.tank_style = e.target.value;
       this._dispatch();
     });
     this.querySelectorAll(".thr-level, .thr-color, .thr-label").forEach((el) => {
@@ -302,6 +300,7 @@ class PropaneTankCard extends HTMLElement {
       entity: "",
       title: "Propane Tank",
       show_title: true,
+      tank_style: "vertical",
       history_hours: 168,
       thresholds: [
         { level: 20, color: "#d9534f", label: "Low" },
@@ -316,6 +315,7 @@ class PropaneTankCard extends HTMLElement {
     this._config = {
       title: "Propane Tank",
       show_title: true,
+      tank_style: "vertical",
       history_hours: 168,
       thresholds: [
         { level: 20, color: "#d9534f", label: "Low" },
@@ -325,9 +325,6 @@ class PropaneTankCard extends HTMLElement {
       ...config,
     };
     this._config.thresholds = [...this._config.thresholds].sort((a, b) => a.level - b.level);
-    this._expanded = false;
-    this._selectedRange = this._config.history_hours;
-
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
     this._buildCard();
   }
@@ -356,6 +353,8 @@ class PropaneTankCard extends HTMLElement {
   // ── Build DOM ──
   _buildCard() {
     const s = this.shadowRoot;
+    const isHorizontal = this._config.tank_style === "horizontal";
+
     s.innerHTML = `
       <style>
         :host { display: block; }
@@ -373,78 +372,16 @@ class PropaneTankCard extends HTMLElement {
           margin-bottom: 8px;
         }
 
-        /* ── Tank ── */
         .tank-area {
           display: flex;
           flex-direction: column;
           align-items: center;
         }
-        .tank-wrapper {
-          position: relative;
-          width: 280px;
-          height: 150px;
-          margin: 8px 0 0;
-        }
-        .valve {
-          position: absolute;
-          top: -16px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 3;
-        }
-        .valve-handle {
-          width: 36px;
-          height: 9px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 3px;
-          margin: 0 auto;
-        }
-        .valve-base {
-          width: 24px;
-          height: 18px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 3px 3px 0 0;
-          margin: -1px auto 0;
-        }
-        .tank {
-          position: absolute;
-          top: 0; left: 0;
-          width: 100%; height: 130px;
-          background: var(--secondary-background-color, #e8e8e8);
-          border: 6px solid var(--primary-text-color, #1a1a1a);
-          border-radius: 65px;
-          overflow: hidden;
-        }
-        .tank-fill {
-          position: absolute;
-          bottom: 0; left: 0;
-          width: 100%; height: 0%;
-          transition: height 1s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
-        }
-        .tank-fill::after {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 4px;
-          opacity: 0.85;
-        }
-        .feet {
-          position: absolute;
-          bottom: -7px; left: 0; width: 100%;
-          display: flex;
-          justify-content: space-between;
-          padding: 0 46px;
-          z-index: 2;
-        }
-        .foot {
-          width: 22px; height: 10px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 0 0 4px 4px;
-        }
+
         .badge {
           position: absolute;
-          right: -14px; bottom: -6px;
-          width: 64px; height: 64px;
+          width: 64px;
+          height: 64px;
           background: var(--card-background-color, #f0f0f0);
           border: 4px solid #6ab42d;
           border-radius: 50%;
@@ -467,154 +404,249 @@ class PropaneTankCard extends HTMLElement {
           color: var(--secondary-text-color, #888);
         }
 
-        /* ── Expanded History ── */
-        .history-panel {
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                      opacity 0.3s ease, margin 0.3s ease;
-          opacity: 0;
-          margin-top: 0;
-        }
-        .history-panel.open {
-          max-height: 400px;
-          opacity: 1;
-          margin-top: 16px;
-        }
-        .history-inner {
-          border-top: 1px solid var(--divider-color, #e0e0e0);
-          padding-top: 14px;
-        }
-        .range-bar {
-          display: flex;
-          gap: 0;
-          border-radius: 8px;
-          overflow: hidden;
-          border: 1px solid var(--divider-color, #ddd);
-          margin-bottom: 14px;
-        }
-        .range-btn {
-          flex: 1;
-          padding: 6px 0;
-          font-size: 12px;
-          font-weight: 500;
-          text-align: center;
-          cursor: pointer;
-          background: var(--card-background-color, #fff);
-          color: var(--primary-text-color, #666);
-          border: none;
-          border-right: 1px solid var(--divider-color, #ddd);
-          transition: background 0.2s, color 0.2s;
-        }
-        .range-btn:last-child { border-right: none; }
-        .range-btn:hover { background: var(--secondary-background-color, #f0f0f0); }
-        .range-btn.active {
-          background: var(--primary-color, #03a9f4);
-          color: #fff;
-        }
-        .chart-container {
+        /* ───── Vertical Tank ───── */
+        .tank-wrapper.vertical {
           position: relative;
+          width: 120px;
+          height: 200px;
+          margin: 20px 0 0;
+        }
+        .vertical .valve {
+          position: absolute;
+          top: -18px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 3;
+        }
+        .vertical .valve-wheel {
+          width: 30px;
+          height: 10px;
+          background: var(--primary-text-color, #1a1a1a);
+          border-radius: 3px;
+          margin: 0 auto;
+        }
+        .vertical .valve-stem {
+          width: 8px;
+          height: 14px;
+          background: var(--primary-text-color, #1a1a1a);
+          margin: -1px auto 0;
+          border-radius: 2px;
+        }
+        .vertical .valve-collar {
+          width: 22px;
+          height: 8px;
+          background: var(--primary-text-color, #1a1a1a);
+          border-radius: 3px 3px 0 0;
+          margin: -1px auto 0;
+        }
+        .vertical .tank-body {
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+        }
+        .vertical .tank-dome {
           width: 100%;
-          height: 140px;
+          height: 40px;
+          background: var(--secondary-background-color, #e8e8e8);
+          border: 5px solid var(--primary-text-color, #1a1a1a);
+          border-bottom: none;
+          border-radius: 60px 60px 0 0;
+          box-sizing: border-box;
+          position: relative;
+          z-index: 1;
         }
-        .chart-container canvas {
-          width: 100% !important;
-          height: 100% !important;
+        .vertical .tank-cylinder {
+          width: 100%;
+          height: 148px;
+          background: var(--secondary-background-color, #e8e8e8);
+          border-left: 5px solid var(--primary-text-color, #1a1a1a);
+          border-right: 5px solid var(--primary-text-color, #1a1a1a);
+          box-sizing: border-box;
+          position: relative;
+          overflow: hidden;
+          margin-top: -1px;
         }
-        .chart-loading {
+        .vertical .tank-bottom {
+          width: 100%;
+          height: 5px;
+          background: var(--primary-text-color, #1a1a1a);
+          margin-top: -1px;
+          position: relative;
+          z-index: 1;
+        }
+        .vertical .tank-fill {
+          position: absolute;
+          bottom: 0; left: 0;
+          width: 100%;
+          height: 0%;
+          transition: height 1s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
+        }
+        .vertical .handle {
+          position: absolute;
+          top: -4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 50px;
+          height: 20px;
+          border: 4px solid var(--primary-text-color, #1a1a1a);
+          border-bottom: none;
+          border-radius: 30px 30px 0 0;
+          z-index: 2;
+        }
+        .vertical .foot-ring {
+          width: 108px;
+          height: 10px;
+          background: var(--primary-text-color, #1a1a1a);
+          border-radius: 0 0 4px 4px;
+          margin: 0 auto;
+          position: relative;
+          z-index: 1;
+        }
+        .vertical .badge {
+          right: -20px;
+          bottom: 10px;
+        }
+
+        /* ───── Horizontal Tank ───── */
+        .tank-wrapper.horizontal {
+          position: relative;
+          width: 260px;
+          height: 130px;
+          margin: 20px 0 0;
+        }
+        .horizontal .valve {
+          position: absolute;
+          top: -18px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 3;
+        }
+        .horizontal .valve-wheel {
+          width: 30px;
+          height: 10px;
+          background: var(--primary-text-color, #1a1a1a);
+          border-radius: 3px;
+          margin: 0 auto;
+        }
+        .horizontal .valve-stem {
+          width: 8px;
+          height: 14px;
+          background: var(--primary-text-color, #1a1a1a);
+          margin: -1px auto 0;
+          border-radius: 2px;
+        }
+        .horizontal .valve-collar {
+          width: 22px;
+          height: 8px;
+          background: var(--primary-text-color, #1a1a1a);
+          border-radius: 3px 3px 0 0;
+          margin: -1px auto 0;
+        }
+        .horizontal .tank-body {
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+        }
+        .horizontal .tank-shell {
+          width: 100%;
+          height: 100px;
+          background: var(--secondary-background-color, #e8e8e8);
+          border: 5px solid var(--primary-text-color, #1a1a1a);
+          border-radius: 50px;
+          box-sizing: border-box;
+          position: relative;
+          overflow: hidden;
+        }
+        .horizontal .tank-fill {
+          position: absolute;
+          bottom: 0; left: 0;
+          width: 100%;
+          height: 0%;
+          transition: height 1s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
+        }
+        .horizontal .feet {
+          position: absolute;
+          bottom: -8px;
+          left: 0; width: 100%;
           display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 140px;
-          font-size: 13px;
-          color: var(--secondary-text-color, #999);
+          justify-content: space-between;
+          padding: 0 40px;
+          box-sizing: border-box;
+          z-index: 2;
         }
-        .chart-stats {
-          display: flex;
-          justify-content: space-around;
-          margin-top: 10px;
-          font-size: 12px;
-          color: var(--secondary-text-color, #888);
+        .horizontal .foot {
+          width: 24px;
+          height: 12px;
+          background: var(--primary-text-color, #1a1a1a);
+          border-radius: 0 0 4px 4px;
         }
-        .stat { text-align: center; }
-        .stat-val {
-          font-weight: 600;
-          font-size: 14px;
-          color: var(--primary-text-color, #333);
+        .horizontal .badge {
+          right: -14px;
+          bottom: -6px;
         }
       </style>
 
       <ha-card>
         ${this._config.show_title !== false && this._config.title ? `<div class="card-title">${this._config.title}</div>` : ""}
         <div class="tank-area">
-          <div class="tank-wrapper">
-            <div class="valve">
-              <div class="valve-handle"></div>
-              <div class="valve-base"></div>
-            </div>
-            <div class="tank">
-              <div class="tank-fill" id="fill"></div>
-            </div>
-            <div class="feet"><div class="foot"></div><div class="foot"></div></div>
+          <div class="tank-wrapper ${isHorizontal ? "horizontal" : "vertical"}">
+            ${isHorizontal ? this._buildHorizontalTank() : this._buildVerticalTank()}
             <div class="badge" id="badge">
               <span class="badge-text" id="badgeText">--%</span>
             </div>
           </div>
           <div class="updated" id="updated"></div>
         </div>
-
-        <div class="history-panel" id="historyPanel">
-          <div class="history-inner">
-            <div class="range-bar" id="rangeBar">
-              <button class="range-btn" data-hours="24">24h</button>
-              <button class="range-btn" data-hours="72">3d</button>
-              <button class="range-btn" data-hours="168">7d</button>
-              <button class="range-btn" data-hours="336">14d</button>
-              <button class="range-btn" data-hours="720">30d</button>
-            </div>
-            <div class="chart-container" id="chartContainer">
-              <div class="chart-loading" id="chartLoading">Loading history…</div>
-              <canvas id="chartCanvas" style="display:none;"></canvas>
-            </div>
-            <div class="chart-stats" id="chartStats" style="display:none;">
-              <div class="stat"><div class="stat-val" id="statMin">--</div>Min</div>
-              <div class="stat"><div class="stat-val" id="statAvg">--</div>Avg</div>
-              <div class="stat"><div class="stat-val" id="statMax">--</div>Max</div>
-              <div class="stat"><div class="stat-val" id="statCur">--</div>Now</div>
-            </div>
-          </div>
-        </div>
       </ha-card>
     `;
 
-    // ── Toggle expand on tap ──
-    s.querySelector("ha-card").addEventListener("click", (e) => {
-      if (e.target.closest(".range-bar")) return;
-      this._expanded = !this._expanded;
-      const panel = s.getElementById("historyPanel");
-      if (this._expanded) {
-        panel.classList.add("open");
-        this._setActiveRange(this._selectedRange);
-        this._fetchHistory();
-      } else {
-        panel.classList.remove("open");
-      }
-    });
-
-    // ── Range buttons ──
-    s.getElementById("rangeBar").addEventListener("click", (e) => {
-      const btn = e.target.closest(".range-btn");
-      if (!btn) return;
-      e.stopPropagation();
-      this._selectedRange = parseInt(btn.dataset.hours);
-      this._setActiveRange(this._selectedRange);
-      this._fetchHistory();
+    // ── Open more-info dialog on tap ──
+    s.querySelector("ha-card").addEventListener("click", () => {
+      const event = new CustomEvent("hass-more-info", {
+        detail: { entityId: this._config.entity },
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(event);
     });
   }
 
-  _setActiveRange(hours) {
-    this.shadowRoot.querySelectorAll(".range-btn")
-      .forEach((b) => b.classList.toggle("active", parseInt(b.dataset.hours) === hours));
+  _buildVerticalTank() {
+    return `
+      <div class="handle"></div>
+      <div class="valve">
+        <div class="valve-wheel"></div>
+        <div class="valve-stem"></div>
+        <div class="valve-collar"></div>
+      </div>
+      <div class="tank-body">
+        <div class="tank-dome"></div>
+        <div class="tank-cylinder">
+          <div class="tank-fill" id="fill"></div>
+        </div>
+        <div class="tank-bottom"></div>
+      </div>
+      <div class="foot-ring"></div>
+    `;
+  }
+
+  _buildHorizontalTank() {
+    return `
+      <div class="valve">
+        <div class="valve-wheel"></div>
+        <div class="valve-stem"></div>
+        <div class="valve-collar"></div>
+      </div>
+      <div class="tank-body">
+        <div class="tank-shell">
+          <div class="tank-fill" id="fill"></div>
+        </div>
+      </div>
+      <div class="feet">
+        <div class="foot"></div>
+        <div class="foot"></div>
+      </div>
+    `;
   }
 
   // ── Update Tank ──
@@ -649,186 +681,6 @@ class PropaneTankCard extends HTMLElement {
     }
   }
 
-  // ── Fetch & Render History ──
-  async _fetchHistory() {
-    const s = this.shadowRoot;
-    const loading = s.getElementById("chartLoading");
-    const canvas = s.getElementById("chartCanvas");
-    const stats = s.getElementById("chartStats");
-
-    loading.textContent = "Loading history…";
-    loading.style.display = "flex";
-    canvas.style.display = "none";
-    stats.style.display = "none";
-
-    try {
-      const end = new Date();
-      const start = new Date(end.getTime() - this._selectedRange * 3600000);
-      const url =
-        `history/period/${start.toISOString()}` +
-        `?filter_entity_id=${this._config.entity}` +
-        `&end_time=${end.toISOString()}` +
-        `&minimal_response&no_attributes`;
-
-      const resp = await this._hass.callApi("GET", url);
-
-      if (!resp || !resp[0] || resp[0].length < 2) {
-        loading.textContent = "No history data available";
-        return;
-      }
-
-      const points = resp[0]
-        .map((e) => ({
-          t: new Date(e.last_changed || e.last_updated).getTime(),
-          v: parseFloat(e.state),
-        }))
-        .filter((p) => !isNaN(p.v));
-
-      if (points.length < 2) {
-        loading.textContent = "Not enough data points";
-        return;
-      }
-
-      loading.style.display = "none";
-      canvas.style.display = "block";
-      stats.style.display = "flex";
-      this._drawChart(points);
-      this._drawStats(points);
-    } catch (err) {
-      console.error("PropaneTankCard history fetch error:", err);
-      loading.textContent = "Could not load history";
-    }
-  }
-
-  _drawChart(points) {
-    const s = this.shadowRoot;
-    const canvas = s.getElementById("chartCanvas");
-    const container = s.getElementById("chartContainer");
-    const dpr = window.devicePixelRatio || 1;
-    const w = container.clientWidth;
-    const h = 140;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.width = w + "px";
-    canvas.style.height = h + "px";
-
-    const ctx = canvas.getContext("2d");
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, w, h);
-
-    const pad = { top: 10, right: 10, bottom: 24, left: 34 };
-    const cw = w - pad.left - pad.right;
-    const ch = h - pad.top - pad.bottom;
-
-    const tMin = points[0].t;
-    const tMax = points[points.length - 1].t;
-    const tRange = tMax - tMin || 1;
-
-    const vals = points.map((p) => p.v);
-    let vMin = Math.min(...vals);
-    let vMax = Math.max(...vals);
-    if (vMax - vMin < 5) {
-      vMin = Math.max(0, vMin - 5);
-      vMax = Math.min(100, vMax + 5);
-    }
-    const vRange = vMax - vMin || 1;
-
-    const toX = (t) => pad.left + ((t - tMin) / tRange) * cw;
-    const toY = (v) => pad.top + ch - ((v - vMin) / vRange) * ch;
-
-    // Threshold background bands
-    const sorted = [...this._config.thresholds].sort((a, b) => a.level - b.level);
-    let prev = 0;
-    for (const t of sorted) {
-      const bandTop = Math.min(t.level, vMax);
-      const bandBot = Math.max(prev, vMin);
-      if (bandTop > bandBot) {
-        const yTop = toY(bandTop);
-        const yBot = toY(bandBot);
-        ctx.fillStyle = t.color + "14";
-        ctx.fillRect(pad.left, yTop, cw, yBot - yTop);
-      }
-      prev = t.level;
-    }
-
-    // Horizontal grid
-    ctx.strokeStyle = "rgba(128,128,128,0.15)";
-    ctx.lineWidth = 1;
-    const gridSteps = 4;
-    for (let i = 0; i <= gridSteps; i++) {
-      const v = vMin + (vRange / gridSteps) * i;
-      const y = toY(v);
-      ctx.beginPath();
-      ctx.moveTo(pad.left, y);
-      ctx.lineTo(w - pad.right, y);
-      ctx.stroke();
-      ctx.fillStyle = "rgba(128,128,128,0.55)";
-      ctx.font = "10px sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(Math.round(v) + "%", pad.left - 4, y + 3);
-    }
-
-    // Time labels
-    ctx.fillStyle = "rgba(128,128,128,0.55)";
-    ctx.font = "10px sans-serif";
-    ctx.textAlign = "center";
-    const nLabels = Math.min(5, Math.max(2, Math.floor(cw / 60)));
-    for (let i = 0; i <= nLabels; i++) {
-      const t = tMin + (tRange / nLabels) * i;
-      const d = new Date(t);
-      const label =
-        this._selectedRange <= 24
-          ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : d.toLocaleDateString([], { month: "short", day: "numeric" });
-      ctx.fillText(label, toX(t), h - 4);
-    }
-
-    // Line (colored per threshold)
-    ctx.lineWidth = 2;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    for (let i = 1; i < points.length; i++) {
-      const p0 = points[i - 1];
-      const p1 = points[i];
-      ctx.strokeStyle = this._getColor((p0.v + p1.v) / 2);
-      ctx.beginPath();
-      ctx.moveTo(toX(p0.t), toY(p0.v));
-      ctx.lineTo(toX(p1.t), toY(p1.v));
-      ctx.stroke();
-    }
-
-    // Area fill
-    ctx.globalAlpha = 0.1;
-    ctx.beginPath();
-    ctx.moveTo(toX(points[0].t), toY(points[0].v));
-    for (const p of points) ctx.lineTo(toX(p.t), toY(p.v));
-    ctx.lineTo(toX(points[points.length - 1].t), pad.top + ch);
-    ctx.lineTo(toX(points[0].t), pad.top + ch);
-    ctx.closePath();
-    ctx.fillStyle = this._getColor(points[points.length - 1].v);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // Current value dot
-    const last = points[points.length - 1];
-    ctx.beginPath();
-    ctx.arc(toX(last.t), toY(last.v), 4, 0, Math.PI * 2);
-    ctx.fillStyle = this._getColor(last.v);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.9)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
-
-  _drawStats(points) {
-    const s = this.shadowRoot;
-    const vals = points.map((p) => p.v);
-    s.getElementById("statMin").textContent = Math.round(Math.min(...vals)) + "%";
-    s.getElementById("statAvg").textContent = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) + "%";
-    s.getElementById("statMax").textContent = Math.round(Math.max(...vals)) + "%";
-    s.getElementById("statCur").textContent = Math.round(vals[vals.length - 1]) + "%";
-  }
-
   _relativeTime(d) {
     const sec = Math.floor((Date.now() - d) / 1000);
     if (sec < 60) return "just now";
@@ -839,7 +691,7 @@ class PropaneTankCard extends HTMLElement {
   }
 
   getCardSize() {
-    return this._expanded ? 5 : 3;
+    return 3;
   }
 }
 
