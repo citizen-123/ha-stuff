@@ -407,182 +407,35 @@ class PropaneTankCard extends HTMLElement {
         /* ───── Vertical Tank ───── */
         .tank-wrapper.vertical {
           position: relative;
-          width: 120px;
-          height: 200px;
+          width: 130px;
+          height: 230px;
           margin: 20px 0 0;
         }
-        .vertical .valve {
-          position: absolute;
-          top: -18px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 3;
-        }
-        .vertical .valve-wheel {
-          width: 30px;
-          height: 10px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 3px;
-          margin: 0 auto;
-        }
-        .vertical .valve-stem {
-          width: 8px;
-          height: 14px;
-          background: var(--primary-text-color, #1a1a1a);
-          margin: -1px auto 0;
-          border-radius: 2px;
-        }
-        .vertical .valve-collar {
-          width: 22px;
-          height: 8px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 3px 3px 0 0;
-          margin: -1px auto 0;
-        }
-        .vertical .tank-body {
-          position: absolute;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-        }
-        .vertical .tank-dome {
+        .vertical .tank-svg {
           width: 100%;
-          height: 40px;
-          background: var(--secondary-background-color, #e8e8e8);
-          border: 5px solid var(--primary-text-color, #1a1a1a);
-          border-bottom: none;
-          border-radius: 60px 60px 0 0;
-          box-sizing: border-box;
-          position: relative;
-          z-index: 1;
-        }
-        .vertical .tank-cylinder {
-          width: 100%;
-          height: 148px;
-          background: var(--secondary-background-color, #e8e8e8);
-          border-left: 5px solid var(--primary-text-color, #1a1a1a);
-          border-right: 5px solid var(--primary-text-color, #1a1a1a);
-          box-sizing: border-box;
-          position: relative;
-          overflow: hidden;
-          margin-top: -1px;
-        }
-        .vertical .tank-bottom {
-          width: 100%;
-          height: 5px;
-          background: var(--primary-text-color, #1a1a1a);
-          margin-top: -1px;
-          position: relative;
-          z-index: 1;
-        }
-        .vertical .tank-fill {
-          position: absolute;
-          bottom: 0; left: 0;
-          width: 100%;
-          height: 0%;
-          transition: height 1s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
-        }
-        .vertical .handle {
-          position: absolute;
-          top: -4px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 50px;
-          height: 20px;
-          border: 4px solid var(--primary-text-color, #1a1a1a);
-          border-bottom: none;
-          border-radius: 30px 30px 0 0;
-          z-index: 2;
-        }
-        .vertical .foot-ring {
-          width: 108px;
-          height: 10px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 0 0 4px 4px;
-          margin: 0 auto;
-          position: relative;
-          z-index: 1;
+          height: 100%;
+          overflow: visible;
         }
         .vertical .badge {
           right: -20px;
-          bottom: 10px;
+          bottom: 20px;
         }
 
         /* ───── Horizontal Tank ───── */
         .tank-wrapper.horizontal {
           position: relative;
           width: 260px;
-          height: 130px;
+          height: 150px;
           margin: 20px 0 0;
         }
-        .horizontal .valve {
-          position: absolute;
-          top: -18px;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 3;
-        }
-        .horizontal .valve-wheel {
-          width: 30px;
-          height: 10px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 3px;
-          margin: 0 auto;
-        }
-        .horizontal .valve-stem {
-          width: 8px;
-          height: 14px;
-          background: var(--primary-text-color, #1a1a1a);
-          margin: -1px auto 0;
-          border-radius: 2px;
-        }
-        .horizontal .valve-collar {
-          width: 22px;
-          height: 8px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 3px 3px 0 0;
-          margin: -1px auto 0;
-        }
-        .horizontal .tank-body {
-          position: absolute;
-          top: 0; left: 0;
-          width: 100%; height: 100%;
-        }
-        .horizontal .tank-shell {
+        .horizontal .tank-svg {
           width: 100%;
-          height: 100px;
-          background: var(--secondary-background-color, #e8e8e8);
-          border: 5px solid var(--primary-text-color, #1a1a1a);
-          border-radius: 50px;
-          box-sizing: border-box;
-          position: relative;
-          overflow: hidden;
-        }
-        .horizontal .tank-fill {
-          position: absolute;
-          bottom: 0; left: 0;
-          width: 100%;
-          height: 0%;
-          transition: height 1s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
-        }
-        .horizontal .feet {
-          position: absolute;
-          bottom: -8px;
-          left: 0; width: 100%;
-          display: flex;
-          justify-content: space-between;
-          padding: 0 40px;
-          box-sizing: border-box;
-          z-index: 2;
-        }
-        .horizontal .foot {
-          width: 24px;
-          height: 12px;
-          background: var(--primary-text-color, #1a1a1a);
-          border-radius: 0 0 4px 4px;
+          height: 100%;
+          overflow: visible;
         }
         .horizontal .badge {
           right: -14px;
-          bottom: -6px;
+          bottom: 6px;
         }
       </style>
 
@@ -612,40 +465,96 @@ class PropaneTankCard extends HTMLElement {
   }
 
   _buildVerticalTank() {
+    // SVG propane tank: upright cylinder with smooth dome top
+    // viewBox: 0 0 130 230, tank body from y=30 to y=210
+    const tankColor = "var(--secondary-background-color, #e8e8e8)";
+    const strokeColor = "var(--primary-text-color, #1a1a1a)";
     return `
-      <div class="handle"></div>
-      <div class="valve">
-        <div class="valve-wheel"></div>
-        <div class="valve-stem"></div>
-        <div class="valve-collar"></div>
-      </div>
-      <div class="tank-body">
-        <div class="tank-dome"></div>
-        <div class="tank-cylinder">
-          <div class="tank-fill" id="fill"></div>
-        </div>
-        <div class="tank-bottom"></div>
-      </div>
-      <div class="foot-ring"></div>
+      <svg class="tank-svg" viewBox="0 0 130 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="vtank-clip">
+            <!-- Rounded rect for cylinder body + dome -->
+            <path d="
+              M 25,70
+              L 25,200
+              Q 25,220 45,220
+              L 85,220
+              Q 105,220 105,200
+              L 105,70
+              Q 105,30 65,30
+              Q 25,30 25,70
+              Z
+            "/>
+          </clipPath>
+        </defs>
+
+        <!-- Handle arch -->
+        <path d="M 45,28 Q 45,8 65,8 Q 85,8 85,28" fill="none" stroke="${strokeColor}" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- Valve wheel -->
+        <rect x="52" y="12" width="26" height="8" rx="3" fill="${strokeColor}"/>
+        <!-- Valve stem -->
+        <rect x="61" y="18" width="8" height="14" rx="2" fill="${strokeColor}"/>
+        <!-- Valve collar -->
+        <rect x="55" y="30" width="20" height="6" rx="2" fill="${strokeColor}"/>
+
+        <!-- Tank outline -->
+        <path d="
+          M 25,70
+          L 25,200
+          Q 25,220 45,220
+          L 85,220
+          Q 105,220 105,200
+          L 105,70
+          Q 105,30 65,30
+          Q 25,30 25,70
+          Z
+        " fill="${tankColor}" stroke="${strokeColor}" stroke-width="5"/>
+
+        <!-- Fill (clipped to tank shape) -->
+        <rect id="fill" x="20" y="220" width="90" height="0"
+              clip-path="url(#vtank-clip)"
+              style="transition: y 1s cubic-bezier(0.4,0,0.2,1), height 1s cubic-bezier(0.4,0,0.2,1), fill 0.5s ease;"/>
+
+        <!-- Foot ring -->
+        <rect x="22" y="220" width="86" height="8" rx="3" fill="${strokeColor}"/>
+
+        <!-- Collar ring near top -->
+        <ellipse cx="65" cy="68" rx="42" ry="4" fill="none" stroke="${strokeColor}" stroke-width="2.5" opacity="0.4"/>
+      </svg>
     `;
   }
 
   _buildHorizontalTank() {
+    // SVG horizontal propane tank: side-lying cylinder with rounded ends
+    const tankColor = "var(--secondary-background-color, #e8e8e8)";
+    const strokeColor = "var(--primary-text-color, #1a1a1a)";
     return `
-      <div class="valve">
-        <div class="valve-wheel"></div>
-        <div class="valve-stem"></div>
-        <div class="valve-collar"></div>
-      </div>
-      <div class="tank-body">
-        <div class="tank-shell">
-          <div class="tank-fill" id="fill"></div>
-        </div>
-      </div>
-      <div class="feet">
-        <div class="foot"></div>
-        <div class="foot"></div>
-      </div>
+      <svg class="tank-svg" viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="htank-clip">
+            <rect x="15" y="20" width="230" height="100" rx="50" ry="50"/>
+          </clipPath>
+        </defs>
+
+        <!-- Valve wheel -->
+        <rect x="117" y="2" width="26" height="8" rx="3" fill="${strokeColor}"/>
+        <!-- Valve stem -->
+        <rect x="126" y="8" width="8" height="14" rx="2" fill="${strokeColor}"/>
+
+        <!-- Tank outline -->
+        <rect x="15" y="20" width="230" height="100" rx="50" ry="50"
+              fill="${tankColor}" stroke="${strokeColor}" stroke-width="5"/>
+
+        <!-- Fill (clipped to tank shape) -->
+        <rect id="fill" x="10" y="120" width="240" height="0"
+              clip-path="url(#htank-clip)"
+              style="transition: y 1s cubic-bezier(0.4,0,0.2,1), height 1s cubic-bezier(0.4,0,0.2,1), fill 0.5s ease;"/>
+
+        <!-- Feet -->
+        <rect x="55" y="120" width="20" height="14" rx="3" fill="${strokeColor}"/>
+        <rect x="185" y="120" width="20" height="14" rx="3" fill="${strokeColor}"/>
+      </svg>
     `;
   }
 
@@ -662,17 +571,28 @@ class PropaneTankCard extends HTMLElement {
 
     if (!stateObj || ["unavailable", "unknown"].includes(stateObj.state)) {
       badgeText.textContent = "N/A";
-      fill.style.height = "0%";
+      fill.setAttribute("height", "0");
       updated.textContent = stateObj ? "Entity unavailable" : "Entity not found";
       return;
     }
 
     const level = Math.max(0, Math.min(100, parseFloat(stateObj.state) || 0));
     const color = this._getColor(level);
-    const highlight = this._lighten(color);
+    const isHorizontal = this._config.tank_style === "horizontal";
 
-    fill.style.height = level + "%";
-    fill.style.background = `linear-gradient(to top, ${color} 85%, ${highlight} 100%)`;
+    // SVG fill: animate rect y and height
+    if (isHorizontal) {
+      // Tank body from y=20 to y=120, height=100
+      const fillH = (level / 100) * 100;
+      fill.setAttribute("y", String(120 - fillH));
+      fill.setAttribute("height", String(fillH));
+    } else {
+      // Tank body from y=30 to y=220, height=190
+      const fillH = (level / 100) * 190;
+      fill.setAttribute("y", String(220 - fillH));
+      fill.setAttribute("height", String(fillH));
+    }
+    fill.style.fill = color;
     badge.style.borderColor = color;
     badgeText.textContent = Math.round(level) + "%";
 
